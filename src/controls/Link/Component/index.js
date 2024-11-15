@@ -27,6 +27,16 @@ class LayoutComponent extends Component {
     linkTargetOption: this.props.config.defaultTargetOption,
   };
 
+  modalRef = React.createRef();
+
+  componentDidMount() {
+    window.addEventListener("resize", this.updateModalPosition);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateModalPosition);
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps.expanded && !this.props.expanded) {
       this.setState({
@@ -36,7 +46,40 @@ class LayoutComponent extends Component {
         linkTargetOption: this.props.config.defaultTargetOption,
       });
     }
+
+    this.updateModalPosition();
   }
+
+  updateModalPosition = () => {
+    const modal = this.modalRef.current;
+
+    if (modal) {
+      const modalRect = modal.getBoundingClientRect();
+      const parentRect = modal.parentElement.getBoundingClientRect();
+
+      const leftEdge = parentRect.left;
+      const rightEdge = parentRect.right;
+      let leftPos = 5;
+      let rightPos = "auto";
+
+      if (leftEdge + modalRect.width > window.innerWidth - 10) {
+        leftPos = "auto";
+        rightPos = 5;
+
+        if (
+          window.innerWidth - rightEdge + modalRect.width >
+          window.innerWidth
+        ) {
+          leftPos = 0 - leftEdge + (window.innerWidth - modalRect.width) / 2;
+          rightPos = "auto";
+        }
+      }
+      modal.style.left = typeof leftPos === "number" ? `${leftPos}px` : leftPos;
+      modal.style.right =
+        typeof rightPos === "number" ? `${rightPos}px` : rightPos;
+      // modal.style.top = `${parentRect.bottom + 5}px`; // 5px below the parent element
+    }
+  };
 
   removeLink = () => {
     const { onChange } = this.props;
@@ -108,6 +151,7 @@ class LayoutComponent extends Component {
       <div
         className={classNames('rdw-link-modal', popupClassName)}
         onClick={stopPropagation}
+        ref={this.modalRef}
       >
         <label className="rdw-link-modal-label" htmlFor="linkTitle">
           {translations['components.controls.link.linkTitle']}
