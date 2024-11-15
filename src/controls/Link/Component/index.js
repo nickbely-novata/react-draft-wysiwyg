@@ -22,6 +22,8 @@ class LayoutComponent extends Component {
 
   state = {
     showModal: false,
+    modalLeftPos: undefined,
+    modalRightPos: undefined,
     linkTarget: '',
     linkTitle: '',
     linkTargetOption: this.props.config.defaultTargetOption,
@@ -41,13 +43,16 @@ class LayoutComponent extends Component {
     if (prevProps.expanded && !this.props.expanded) {
       this.setState({
         showModal: false,
+        modalLeftPos: undefined,
+        modalRightPos: undefined,
         linkTarget: '',
         linkTitle: '',
         linkTargetOption: this.props.config.defaultTargetOption,
       });
     }
-
-    this.updateModalPosition();
+    if (this.state.modalLeftPos === undefined && this.state.modalRightPos === undefined) {
+      this.updateModalPosition();
+    }
   }
 
   updateModalPosition = () => {
@@ -74,10 +79,10 @@ class LayoutComponent extends Component {
           rightPos = "auto";
         }
       }
-      modal.style.left = typeof leftPos === "number" ? `${leftPos}px` : leftPos;
-      modal.style.right =
-        typeof rightPos === "number" ? `${rightPos}px` : rightPos;
-      // modal.style.top = `${parentRect.bottom + 5}px`; // 5px below the parent element
+      this.setState({
+        modalLeftPos: typeof leftPos === "number" ? `${leftPos}px` : leftPos,
+        modalRightPos: typeof rightPos === "number" ? `${rightPos}px` : rightPos,
+      });
     }
   };
 
@@ -107,6 +112,8 @@ class LayoutComponent extends Component {
   hideModal = () => {
     this.setState({
       showModal: false,
+      modalLeftPos: undefined,
+      modalRightPos: undefined,
     });
   };
 
@@ -152,6 +159,10 @@ class LayoutComponent extends Component {
         className={classNames('rdw-link-modal', popupClassName)}
         onClick={stopPropagation}
         ref={this.modalRef}
+        style={{
+          left: this.state.modalLeftPos ?? "5px",
+          right: this.state.modalRightPos ?? "auto",
+        }}
       >
         <label className="rdw-link-modal-label" htmlFor="linkTitle">
           {translations['components.controls.link.linkTitle']}
